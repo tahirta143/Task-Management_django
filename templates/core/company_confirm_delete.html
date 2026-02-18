@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card" style="padding: 3rem;">
+        <h2>Delete Company</h2>
+        <p style="color: var(--text-secondary); margin: 1.5rem 0;">
+            Are you sure you want to delete <strong>{{ company.name }}</strong>? This action cannot be undone.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex gap-4">
+                <button type="submit" class="btn btn-primary" style="background: #e11d48; border: none; flex: 1;">
+                    Yes, Delete Company
+                </button>
+                <a href="{% url 'company-list' %}" class="btn" style="flex: 1;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

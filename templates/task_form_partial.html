@@ -1,0 +1,26 @@
+<div style="text-align: left;">
+    <h2 class="mb-4">{% if object %}Edit Task{% else %}Create New Task{% endif %}</h2>
+
+    <form action="{{ request.path }}" method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <div style="color: var(--danger-color); font-size: 0.875rem; margin-top: 0.25rem;">
+                {{ field.errors }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-4" style="margin-top: 2rem; justify-content: flex-end;">
+            <button type="button" class="btn"
+                style="background-color: transparent; border: 1px solid var(--border-color);"
+                onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+    </form>
+</div>

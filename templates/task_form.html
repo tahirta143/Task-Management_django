@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 class="mb-4">{% if object %}Edit Task{% else %}Create Task{% endif %}</h1>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div style="color: var(--danger-color); font-size: 0.875rem; margin-top: 0.25rem;">
+                    {{ field.errors }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="flex gap-4" style="margin-top: 2rem;">
+                <button type="submit" class="btn">Save Task</button>
+                <a href="{% url 'task-list' %}" class="btn"
+                    style="background-color: var(--sidebar-bg); border: 1px solid var(--border-color);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

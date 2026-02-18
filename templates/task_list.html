@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h1>Tasks <span style="font-size: 1rem; color: var(--text-secondary); font-weight: 400;">({{
+            paginator.count|default:tasks.count }}
+            total)</span></h1>
+    {% if user.is_manager or user.is_admin %}
+    <button onclick="openModal('{% url 'task-create' %}')" class="btn btn-primary" style="font-size: 0.9rem;">
+        + New Task
+    </button>
+    {% endif %}
+</div>
+
+{% if debug or user.is_staff %}
+<div
+    style="background: #f1f5f9; border: 1px solid var(--border-color); padding: 1rem; margin-bottom: 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+    <strong>Debug Info:</strong>
+    User: {{ user.username }} |
+    Role: {{ user.role }} |
+    Tasks Context Count: {{ tasks|length }} |
+    Is Admin: {{ user.is_admin }} |
+    Is Manager: {{ user.is_manager }}
+</div>
+{% endif %}
+
+<div class="card">
+    {% if tasks %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
+                    <th style="padding: 1rem;">Title</th>
+                    <th style="padding: 1rem;">Status</th>
+                    <th style="padding: 1rem;">Priority</th>
+                    <th style="padding: 1rem;">Assigned To</th>
+                    <th style="padding: 1rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                    <td style="padding: 1rem;">
+                        <span style="font-weight: 500; display: block;">{{ task.title }}</span>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">{{
+                            task.description|truncatechars:50
+                            }}</span>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span>
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if task.priority == 'high' %}
+                        <span style="color: var(--danger-color); font-weight: 600;">High</span>
+                        {% elif task.priority == 'medium' %}
+                        <span style="color: var(--warning-color); font-weight: 600;">Medium</span>
+                        {% else %}
+                        <span style="color: var(--success-color); font-weight: 600;">Low</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if task.assigned_to %}
+                        {{ task.assigned_to.username }}
+                        {% else %}
+                        <span style="color: var(--text-secondary);">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">
+                        <div class="flex gap-4">
+                            <button onclick="openModal('{% url 'task-update' task.pk %}')" class="btn-text"
+                                style="background:none; border:none; cursor:pointer;">Edit</button>
+                            {% if user.is_manager or user.is_admin %}
+                            <a href="{% url 'task-delete' task.pk %}"
+                                style="color: var(--danger-color); font-weight: 500;">Delete</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center" style="padding: 2rem; color: var(--text-secondary);">No tasks found.</p>
+    {% endif %}
+</div>
+{% endblock %}

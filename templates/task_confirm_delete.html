@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 0 auto; margin-top: 10vh;">
+    <div class="card text-center">
+        <h2 class="mb-4">Confirm Delete</h2>
+        <p style="margin-bottom: 2rem;">Are you sure you want to delete the task "{{ object.title }}"? This action
+            cannot be undone.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-between gap-4">
+                <a href="{% url 'task-list' %}" class="btn"
+                    style="background-color: var(--sidebar-bg); border: 1px solid var(--border-color); width: 100%;">Cancel</a>
+                <button type="submit" class="btn"
+                    style="background-color: var(--danger-color); width: 100%;">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

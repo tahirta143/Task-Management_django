@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h1>Companies</h1>
+    <button onclick="openCompanyModal('{% url 'company-create' %}')" class="btn btn-primary">
+        + New Company
+    </button>
+</div>
+
+<!-- Summary Cards -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; max-width: 800px;">
+    <div class="card metric-card primary">
+        <h3>Total Companies</h3>
+        <p class="metric-value">{{ total_companies }}</p>
+    </div>
+    <div class="card metric-card success">
+        <h3>Total Active</h3>
+        <p class="metric-value"
+            style="background: linear-gradient(to right, #10b981, #34d399); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ total_active }}
+        </p>
+    </div>
+    <div class="card metric-card info">
+        <h3>Users in Companies</h3>
+        <p class="metric-value"
+            style="background: linear-gradient(to right, #3b82f6, #60a5fa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ total_users }}
+        </p>
+    </div>
+</div>
+
+
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td style="font-weight: 700;">{{ company.name }}</td>
+                    <td>{{ company.email }}</td>
+                    <td>{{ company.phone|default:"-" }}</td>
+                    <td>
+                        {% if company.is_active %}
+                        <span class="badge badge-completed">Active</span>
+                        {% else %}
+                        <span class="badge badge-pending">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ company.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="flex gap-4">
+                            <button onclick="openCompanyModal('{% url 'company-update' company.pk %}')"
+                                class="btn-text">Edit</button>
+                            <a href="{% url 'company-delete' company.pk %}" class="btn-text"
+                                style="color: #e11d48;">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        No companies found. Click "New Company" to get started.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="companyModal" class="modal-overlay">
+    <div class="modal-content">
+        <button onclick="closeCompanyModal()" class="modal-close">&times;</button>
+        <div id="companyModalBody">
+            <!-- Content loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCompanyModal(url) {
+        const modal = document.getElementById('companyModal');
+        const body = document.getElementById('companyModalBody');
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.text())
+            .then(html => {
+                body.innerHTML = html;
+                modal.style.display = 'flex';
+            });
+    }
+
+    function closeCompanyModal() {
+        document.getElementById('companyModal').style.display = 'none';
+    }
+
+    // Close on click outside
+    window.onclick = function (event) {
+        if (event.target == document.getElementById('companyModal')) {
+            closeCompanyModal();
+        }
+    }
+</script>
+{% endblock %}

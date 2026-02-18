@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Create User{% endblock %}
+
+{% block content %}
+<div class="user-creation-container" style="max-width: 600px; margin: 0 auto; opacity: 0; transform: translateY(20px);">
+    <div class="card">
+        <div style="margin-bottom: 2rem; text-align: center;">
+            <div style="
+                width: 60px; 
+                height: 60px; 
+                background: linear-gradient(135deg, #10b981, #059669); 
+                border-radius: 16px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                margin: 0 auto 1rem;
+                font-size: 1.75rem;
+                box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            ">
+                👤
+            </div>
+            <h1>Create New User</h1>
+            <p style="color: var(--text-secondary);">Add a new member to the team</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger"
+                style="margin-bottom: 1.5rem; background: var(--danger-bg); border: 1px solid var(--danger-text); color: var(--danger-text); padding: 1rem; border-radius: 8px;">
+                {% for error in form.non_field_errors %}
+                <p style="margin: 0;">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="form-group" style="opacity: 0; transform: translateX(-10px);">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="form-text"
+                    style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">{{
+                    field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                <div class="text-danger" style="color: var(--danger-text); font-size: 0.85rem; margin-top: 0.25rem;">{{
+                    error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions"
+                style="display: flex; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                    Create Account
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn"
+                    style="flex: 1; justify-content: center; background: transparent; border-color: var(--border-color);">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Container animation
+        gsap.to('.user-creation-container', {
+            duration: 0.6,
+            opacity: 1,
+            y: 0,
+            ease: 'power3.out'
+        });
+
+        // Form fields staggered animation
+        gsap.to('.form-group', {
+            duration: 0.5,
+            opacity: 1,
+            x: 0,
+            stagger: 0.1,
+            delay: 0.2,
+            ease: 'power2.out'
+        });
+
+        // Button hover effects
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(btn, { scale: 1.02, duration: 0.2 });
+            });
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, { scale: 1, duration: 0.2 });
+            });
+        });
+    });
+</script>
+{% endblock %}

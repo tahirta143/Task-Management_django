@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}User List{% endblock %}
+
+{% block content %}
+<div class="user-list-container" style="opacity: 0; transform: translateY(20px);">
+    <div class="card">
+        <div class="card-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>User Management</h1>
+                <p style="color: var(--text-secondary);">View and manage all registered users</p>
+            </div>
+            <button onclick="openModal('{% url 'create-user' %}')" class="btn btn-primary">
+                <span class="icon">➕</span> Add New User
+            </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Date Joined</th>
+                        <th>Last Login</th>
+                        <th style="min-width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr style="opacity: 0; transform: translateX(-10px);" class="user-row">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="
+                                    width: 40px; 
+                                    height: 40px; 
+                                    background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+                                    border-radius: 10px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center; 
+                                    color: white; 
+                                    font-weight: bold;
+                                    font-size: 1.2rem;
+                                ">
+                                    {{ u.username|first|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">{{ u.username }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-secondary);">{{ u.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="
+                                {% if u.is_admin %}background-color: rgba(99, 102, 241, 0.2); color: #818cf8;
+                                {% elif u.is_manager %}background-color: rgba(16, 185, 129, 0.2); color: #34d399;
+                                {% else %}background-color: rgba(100, 116, 139, 0.2); color: #94a3b8;{% endif %}
+                            ">
+                                {{ u.get_role_display }}
+                            </span>
+                        </td>
+                        <td style="font-weight: 500; color: var(--text-primary);">
+                            {{ u.company.name|default:"-" }}
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                            <span class="badge badge-completed">Active</span>
+                            {% else %}
+                            <span class="badge badge-pending">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-secondary);">{{ u.date_joined|date:"M d, Y" }}</td>
+                        <td style="color: var(--text-secondary);">{{ u.last_login|date:"M d, Y H:i"|default:"Never" }}
+                        </td>
+                        <td>
+                            <div class="flex gap-4">
+                                <button onclick="openModal('{% url 'user-update' u.pk %}')"
+                                    class="btn-text">Edit</button>
+                                <a href="{% url 'user-delete' u.pk %}" class="btn-text"
+                                    style="color: #e11d48;">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem;">No users found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Structure (already in base.html) -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Container animation
+        gsap.to('.user-list-container', {
+            duration: 0.6,
+            opacity: 1,
+            y: 0,
+            ease: 'power3.out'
+        });
+
+        // Table rows staggered animation
+        gsap.to('.user-row', {
+            duration: 0.4,
+            opacity: 1,
+            x: 0,
+            stagger: 0.05,
+            delay: 0.2,
+            ease: 'power2.out'
+        });
+    });
+</script>
+{% endblock %}

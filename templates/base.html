@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+
+<body>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <div class="app-container">
+        <nav id="sidebar" class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">T</div>
+                <h2>TaskFlow</h2>
+            </div>
+            <ul class="nav-links">
+                {% if user.is_authenticated %}
+                <li>
+                    <a href="{% url 'dashboard' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <span class="icon">📊</span> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'task-list' %}"
+                        class="nav-item {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
+                        <span class="icon">📝</span> Tasks
+                    </a>
+                </li>
+                {% if user.is_admin %}
+                <li>
+                    <a href="{% url 'user-list' %}"
+                        class="nav-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                        <span class="icon">👥</span> Users
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'company-list' %}"
+                        class="nav-item {% if 'company' in request.resolver_match.url_name %}active{% endif %}">
+                        <span class="icon">🏢</span> Companies
+                    </a>
+                </li>
+                <!-- Admin Sidebar Chart Link -->
+                <li>
+                    <a href="{% url 'monthly-report' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'monthly-report' %}active{% endif %}">
+                        <span class="icon">📈</span> Monthly Report
+                    </a>
+                </li>
+                {% endif %}
+                <li>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-logout">
+                            <span class="icon">🚪</span> Logout
+                        </button>
+                    </form>
+                </li>
+                {% else %}
+                <li><a href="{% url 'login' %}"
+                        class="nav-item {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Login</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <button id="hamburger" class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="user-info">
+                    {% if user.is_authenticated %}
+                    <span>Welcome, {{ user.username }} ({{ user.get_role_display }})</span>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-body">
+                <!-- Content loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script>
+        // GSAP Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // GSAP In Animation
+            gsap.fromTo(toast,
+                { x: 100, opacity: 0 },
+                { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+            );
+
+            // Auto Remove after 5 seconds
+            setTimeout(() => {
+                gsap.to(toast, {
+                    x: 100,
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: 'power3.in',
+                    onComplete: () => toast.remove()
+                });
+            }, 5000);
+        }
+
+        // Show Django messages as toasts
+        {% if messages %}
+        document.addEventListener('DOMContentLoaded', () => {
+            {% for message in messages %}
+            showToast("{{ message }}", "{{ message.tags }}");
+            {% endfor %}
+        });
+        {% endif %}
+
+        // Hamburger Menu Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.getElementById('hamburger');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+
+                if (sidebar.classList.contains('active')) {
+                    overlay.style.display = 'block';
+                    gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+                } else {
+                    gsap.to(overlay, {
+                        opacity: 0,
+                        duration: 0.3,
+                        onComplete: () => { overlay.style.display = 'none'; }
+                    });
+                }
+            }
+
+            if (hamburger) hamburger.addEventListener('click', toggleSidebar);
+            if (overlay) overlay.addEventListener('click', toggleSidebar);
+
+            // Close sidebar on nav item click (mobile)
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                        toggleSidebar();
+                    }
+                });
+            });
+        });
+
+        // GSAP Animations
+        document.addEventListener('DOMContentLoaded', () => {
+            // GSAP Animations removed for debugging visibility
+        });
+
+        // Modal Logic
+        function attachFormListener(modalBody) {
+            const form = modalBody.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    console.log('Form submission intercepted for:', form.action);
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(response => {
+                            console.log('Response received, redirected:', response.redirected);
+                            if (response.redirected) {
+                                window.location.href = response.url;
+                                return null;
+                            }
+                            return response.text();
+                        })
+                        .then(html => {
+                            if (html) {
+                                modalBody.innerHTML = html;
+                                // Re-attach listener to the newly rendered form
+                                attachFormListener(modalBody);
+                            }
+                        })
+                        .catch(error => console.error('Error during form submission:', error));
+                });
+            }
+        }
+
+        function openModal(url) {
+            const modal = document.getElementById('modal-overlay');
+            const modalBody = document.getElementById('modal-body');
+
+            modal.style.display = 'flex';
+
+            // GSAP Open Animation
+            gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+            gsap.fromTo('.modal-content',
+                { y: 50, opacity: 0, scale: 0.95 },
+                { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' }
+            );
+
+            // Fetch Content
+            modalBody.innerHTML = '<div class="text-center" style="padding: 2rem;">Loading...</div>';
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.text())
+                .then(html => {
+                    modalBody.innerHTML = html;
+                    attachFormListener(modalBody);
+                })
+                .catch(error => {
+                    modalBody.innerHTML = '<div class="text-danger" style="padding: 2rem;">Error loading form.</div>';
+                    console.error('Error opening modal:', error);
+                });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-overlay');
+            gsap.to(modal, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => { modal.style.display = 'none'; }
+            });
+        }
+
+        // Close on outside click
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') closeModal();
+        });
+    </script>
+</body>
+
+</html>

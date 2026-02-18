@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card" style="padding: 3rem;">
+        {% include 'core/company_form_partial.html' %}
+    </div>
+</div>
+
+<script>
+    // Overwrite the partial's close function for the full page
+    function closeCompanyModal() {
+        window.location.href = "{% url 'company-list' %}";
+    }
+</script>
+{% endblock %}

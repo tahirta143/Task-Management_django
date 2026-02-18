@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+    <div class="card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="
+                width: 60px; 
+                height: 60px; 
+                background: var(--danger-bg); 
+                color: var(--danger-text);
+                border-radius: 50%; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                margin: 0 auto 1.5rem;
+                font-size: 1.5rem;
+            ">
+                ⚠️
+            </div>
+            <h1 style="color: var(--text-primary); margin-bottom: 0.5rem;">Delete User</h1>
+            <p style="color: var(--text-secondary);">
+                Are you sure you want to delete user <strong>{{ target_user.username }}</strong>?
+                This action cannot be undone.
+            </p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary"
+                    style="flex: 1; background-color: var(--danger-text); border-color: var(--danger-text); justify-content: center;">
+                    Confirm Deletion
+                </button>
+                <a href="{% url 'user-list' %}" class="btn"
+                    style="flex: 1; border-color: var(--border-color); justify-content: center;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

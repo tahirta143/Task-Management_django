@@ -1,0 +1,25 @@
+<h2>{% if company %}Edit{% else %}Add New{% endif %} Company</h2>
+<p class="text-secondary mb-4">Please fill in the company details below.</p>
+
+<form method="post"
+    action="{% if company %}{% url 'company-update' company.pk %}{% else %}{% url 'company-create' %}{% endif %}">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <div style="color: #e11d48; font-size: 0.8rem; margin-top: 0.25rem;">
+            {{ field.errors.as_text }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="flex justify-between items-center mt-4">
+        <button type="button" onclick="closeCompanyModal()" class="btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+            {% if company %}Save Changes{% else %}Create Company{% endif %}
+        </button>
+    </div>
+</form>
